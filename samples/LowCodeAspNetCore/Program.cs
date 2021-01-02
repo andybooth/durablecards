@@ -38,6 +38,13 @@ public class CardController : Controller
     [HttpPost]
     public IActionResult Post(IFormCollection data)
     {
-        return Json(data);
+        var jObject = new JObject();
+
+        foreach (var property in data)
+        {
+            jObject.Add(new JProperty(property.Key, property.Value.Count == 1 ? property.Value[0] : property.Value.ToArray()));
+        }
+        
+        return Content(jObject.ToString(), "application/json");
     }
 }

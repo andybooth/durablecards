@@ -8,17 +8,41 @@
       "text": "${title}"
     },
     {
-      "$data": "${questions}",
-      "type": "Input.Text",
-      "id": "${id}",
-      "label": "${label}",
-      "isRequired": true
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "items": [
+            {
+              "$data": "${questions}",
+              "type": "Input.Text",
+              "id": "${id}",
+              "label": "${label}",
+              "isRequired": true
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "items": [
+            {
+              "type": "FactSet",
+              "facts": [
+                {
+                  "title": "Date",
+                  "value": "${utcNow()}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "actions": [
     {
       "type": "Action.Submit",
-      "title": "${submit}"
+      "title": "Send"
     }
   ]
 }

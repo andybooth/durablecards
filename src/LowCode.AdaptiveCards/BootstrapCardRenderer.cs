@@ -14,11 +14,33 @@ namespace LowCode.AdaptiveCards
             ElementRenderers.Set<AdaptiveTextBlock>(TextBlockRender);
             ElementRenderers.Set<AdaptiveTextInput>(TextInputRender);
             ElementRenderers.Set<AdaptiveSubmitAction>(SubmitActionRender);
+            ElementRenderers.Set<AdaptiveOpenUrlAction>(OpenUrlActionRender);
+            ElementRenderers.Set<AdaptiveColumnSet>(ColumnSetRender);
+            ElementRenderers.Set<AdaptiveColumn>(ColumnRender);
+            ElementRenderers.Set<AdaptiveContainer>(ContainerRender);
+            ElementRenderers.Set<AdaptiveFactSet>(FactSetRender);
         }
 
         protected override AdaptiveSchemaVersion GetSupportedSchemaVersion()
         {
             return new AdaptiveSchemaVersion(1, 3);
+        }
+
+        public RenderedAdaptiveCard RenderCard(AdaptiveCard card)
+        {
+            try
+            {
+                var context = new AdaptiveRenderContext(HostConfig, ElementRenderers);
+                var tag = context.Render(card);
+                return new RenderedAdaptiveCard(tag, card, context.Warnings);
+            }
+            catch (Exception exception)
+            {
+                throw new AdaptiveRenderException("Failed to render card", exception)
+                {
+                    CardFallbackText = card.FallbackText
+                };
+            }
         }
 
         protected static HtmlTag AdaptiveCardRender(AdaptiveCard card, AdaptiveRenderContext context)
@@ -40,7 +62,7 @@ namespace LowCode.AdaptiveCards
             }
         }
 
-        private static void AddContainerElements(HtmlTag tag, List<AdaptiveElement> elements, AdaptiveRenderContext context)
+        private static void AddContainerElements<T>(HtmlTag tag, List<T> elements, AdaptiveRenderContext context) where T : AdaptiveElement
         {
             foreach (var element in elements)
             {
@@ -51,13 +73,15 @@ namespace LowCode.AdaptiveCards
         protected static HtmlTag TextBlockRender(AdaptiveTextBlock text, AdaptiveRenderContext context)
         {
             return new HtmlTag("p")
+                .Attr("hidden", !text.IsVisible)
                 .SetInnerText(text.Text);
         }
 
         protected static HtmlTag TextInputRender(AdaptiveTextInput input, AdaptiveRenderContext context)
         {
             var formGroup = new DivTag()
-                .AddClass("form-group");
+                .AddClass("form-group")
+                .Attr("hidden", !input.IsVisible);
 
             if (!string.IsNullOrEmpty(input.Label))
             {
@@ -75,12 +99,8 @@ namespace LowCode.AdaptiveCards
                 .Attr("pattern", input.Regex)
                 .Attr("type", input.Style.ToString())
                 .Attr("value", input.Value)
+                .Attr("required", input.IsRequired)
                 .Attr("title", input.ErrorMessage);
-
-            if (input.IsRequired)
-            {
-                formControl.Attr("required", "required");
-            }
 
             if (input.MaxLength > 0)
             {
@@ -101,21 +121,87 @@ namespace LowCode.AdaptiveCards
                 .SetInnerText(action.Title);
         }
 
-        public RenderedAdaptiveCard RenderCard(AdaptiveCard card)
+        protected static HtmlTag OpenUrlActionRender(AdaptiveOpenUrlAction action, AdaptiveRenderContext context)
         {
-            try
-            {
-                var context = new AdaptiveRenderContext(HostConfig, ElementRenderers);
-                var tag = context.Render(card);
-                return new RenderedAdaptiveCard(tag, card, context.Warnings);
-            }
-            catch (Exception exception)
-            {
-                throw new AdaptiveRenderException("Failed to render card", exception)
-                {
-                    CardFallbackText = card.FallbackText
-                };
-            }
+            return new HtmlTag("a")
+                .AddClass("btn")
+                .AddClass("btn-secondary")
+                .Attr("target", "_blank")
+                .Attr("href", action.Url?.ToString())
+                .SetInnerText(action.Title);
         }
+
+        private HtmlTag ColumnSetRender(AdaptiveColumnSet columnSet, AdaptiveRenderContext context)
+        {
+            var container = new DivTag()
+                .AddClass("container")
+                .Attr("hidden", !columnSet.IsVisible);
+
+            var row = new DivTag()
+                .AddClass("row");
+
+            container.Append(row);
+
+            AddContainerElements(row, columnSet.Columns, context);
+
+            return container;
+        }
+
+        private HtmlTag ColumnRender(AdaptiveColumn column, AdaptiveRenderContext context)
+        {
+            var div = new DivTag()
+                .AddClass("col")
+                .Attr("hidden", !column.IsVisible);
+
+            AddContainerElements(div, column.Items, context);
+
+            return div;
+        }
+
+        private HtmlTag ContainerRender(AdaptiveContainer container, AdaptiveRenderContext context)
+        {
+            var div = new DivTag()
+                .Attr("hidden", !container.IsVisible);
+
+            AddContainerElements(div, container.Items, context);
+
+            return div;
+        }
+
+        private HtmlTag FactSetRender(AdaptiveFactSet factSet, AdaptiveRenderContext context)
+        {
+            var definitionList = new HtmlTag("dl")
+                .AddClass("row")
+                .Attr("hidden", !factSet.IsVisible);
+
+            foreach (var fact in factSet.Facts)
+            {
+                var dt = new HtmlTag("dt")
+                    .AddClass("col-sm-3")
+                    .SetInnerText(fact.Title);
+
+                var dd = new HtmlTag("dd")
+                    .AddClass("col-sm-9")
+                    .SetInnerText(fact.Value);
+
+                definitionList.Append(dt);
+                definitionList.Append(dd);
+            }
+
+            return definitionList;
+        }
+    }
+}
+
+public static class HtmlTagExtensions
+{
+    public static HtmlTag Attr(this HtmlTag htmlTag, string name, bool enabled)
+    {
+        if (enabled)
+        {
+            htmlTag.Attr(name, name);
+        }
+
+        return htmlTag;
     }
 }
