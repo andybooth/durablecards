@@ -1,0 +1,14 @@
+{
+  "title": "Please supply all details",
+  "questions": [
+    {
+      "id": "firstName",
+      "label": "First name"
+    },
+    {
+      "id": "lastName",
+      "label": "Last name"
+    }
+  ],
+  "submit": "Send"
+}

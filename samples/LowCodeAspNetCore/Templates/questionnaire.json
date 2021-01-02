@@ -1,0 +1,24 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "${title}"
+    },
+    {
+      "$data": "${questions}",
+      "type": "Input.Text",
+      "id": "${id}",
+      "label": "${label}",
+      "isRequired": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "${submit}"
+    }
+  ]
+}
