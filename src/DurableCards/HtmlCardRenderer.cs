@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 namespace DurableCards
 {
-    public class BootstrapCardRenderer : AdaptiveCardRendererBase<HtmlTag, AdaptiveRenderContext>
+    public class HtmlCardRenderer : AdaptiveCardRendererBase<HtmlTag, AdaptiveRenderContext>
     {
-        public BootstrapCardRenderer()
+        public HtmlCardRenderer()
         {
             ElementRenderers.Set<AdaptiveCard>(AdaptiveCardRender);
             ElementRenderers.Set<AdaptiveTextBlock>(TextBlockRender);
