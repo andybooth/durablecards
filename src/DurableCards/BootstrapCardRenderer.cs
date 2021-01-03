@@ -4,7 +4,7 @@ using AdaptiveCards.Rendering.Html;
 using System;
 using System.Collections.Generic;
 
-namespace LowCode.AdaptiveCards
+namespace DurableCards
 {
     public class BootstrapCardRenderer : AdaptiveCardRendererBase<HtmlTag, AdaptiveRenderContext>
     {
@@ -73,8 +73,40 @@ namespace LowCode.AdaptiveCards
         protected static HtmlTag TextBlockRender(AdaptiveTextBlock text, AdaptiveRenderContext context)
         {
             return new HtmlTag("p")
+                .AddClass(ConvertSizeToClassName(text.Size))
+                .AddClass(ConvertWeightToClassName(text.Weight))
                 .Attr("hidden", !text.IsVisible)
                 .SetInnerText(text.Text);
+        }
+
+        protected static string ConvertSizeToClassName(AdaptiveTextSize textSize)
+        {
+            switch (textSize)
+            {
+                case AdaptiveTextSize.ExtraLarge:
+                    return "display-1";
+                case AdaptiveTextSize.Large:
+                    return "display-2";
+                case AdaptiveTextSize.Medium:
+                    return "display-3";
+                case AdaptiveTextSize.Small:
+                    return "small";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        protected static string ConvertWeightToClassName(AdaptiveTextWeight textWeight)
+        {
+            switch (textWeight)
+            {
+                case AdaptiveTextWeight.Bolder:
+                    return "font-weight-bold";
+                case AdaptiveTextWeight.Lighter:
+                    return "font-weight-light";
+                default:
+                    return string.Empty;
+            }
         }
 
         protected static HtmlTag TextInputRender(AdaptiveTextInput input, AdaptiveRenderContext context)
