@@ -33,16 +33,12 @@ namespace DurableCardsSample
         {
             var entityId = new EntityId(nameof(DurableCard), id.ToString());
             var entityState = await client.ReadEntityStateAsync<DurableCard>(entityId);
-            var adaptiveTemplate = new AdaptiveCardTemplate(entityState.EntityState.Template);
-            var adaptiveCardJson = adaptiveTemplate.Expand(entityState.EntityState.Data);
-            var adaptiveCard = AdaptiveCard.FromJson(adaptiveCardJson);
-            var adaptiveCardRendered = new HtmlCardRenderer();
-            var adaptiveCardOutput = adaptiveCardRendered.RenderCard(adaptiveCard.Card);
+            var html = entityState.EntityState.Render();
 
             return new ContentResult
             {
                 StatusCode = 200,
-                Content = adaptiveCardOutput.Html.ToString(),
+                Content = html,
                 ContentType = "text/html"
             };
         }

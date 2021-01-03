@@ -1,4 +1,5 @@
 ﻿using AdaptiveCards;
+using AdaptiveCards.Templating;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,6 +18,17 @@ namespace DurableCards
         {
             Template = request.Template;
             Data = request.Data;
+        }
+
+        public string Render()
+        {
+            var template = new AdaptiveCardTemplate(Template);
+            var expanded = template.Expand(Data);
+            var card = AdaptiveCard.FromJson(expanded);
+            var renderer = new HtmlCardRenderer();
+            var output = renderer.RenderCard(card.Card);
+
+            return output.Html.ToString();
         }
     }
 }
