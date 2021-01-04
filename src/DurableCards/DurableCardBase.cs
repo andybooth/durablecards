@@ -8,21 +8,30 @@ namespace DurableCards
     [JsonObject(MemberSerialization.OptIn)]
     public class DurableCardBase : IDurableCard
     {
-        [JsonProperty("template")]
-        public AdaptiveCard Template { get; set; }
+        [JsonProperty("definition")]
+        public DurableDefinition Definition { get; private set; } = new DurableDefinition();
 
         [JsonProperty("data")]
-        public JObject Data { get; set; }
+        public DurableData Data { get; private set; } = new DurableData();
 
-        public void Create(CreateCardRequest request)
+        public void SetDefinition(DurableDefinition definition)
         {
-            Template = request.Template;
-            Data = request.Data;
+            Definition = definition;
+        }
+
+        public void SetData(DurableData data)
+        {
+            Data = data;
+        }
+
+        public void AddAttachment(JObject attachment)
+        {
+            Data.Attachments.Add(attachment);
         }
 
         public string Render()
         {
-            var template = new AdaptiveCardTemplate(Template);
+            var template = new AdaptiveCardTemplate(Definition.Template);
             var expanded = template.Expand(Data);
             var card = AdaptiveCard.FromJson(expanded);
             var renderer = new HtmlCardRenderer();

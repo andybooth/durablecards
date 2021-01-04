@@ -48,7 +48,8 @@ namespace DurableCards
             var html = new HtmlTag("html");
             var head = new HtmlTag("head");
             var body = new HtmlTag("body");
-            var form = new HtmlTag("form");
+            var form = new HtmlTag("form")
+                .Attr("method", "post");
 
             var stylesheet = new HtmlTag("link")
                 .Attr("rel", "stylesheet")
@@ -91,8 +92,8 @@ namespace DurableCards
         protected static HtmlTag TextBlockRender(AdaptiveTextBlock text, AdaptiveRenderContext context)
         {
             return new HtmlTag("p")
-                .AddClass(ConvertSizeToClassName(text.Size))
-                .AddClass(ConvertWeightToClassName(text.Weight))
+                .AddOptionalClass(ConvertSizeToClassName(text.Size))
+                .AddOptionalClass(ConvertSizeToClassName(text.Size))
                 .Attr("hidden", !text.IsVisible)
                 .SetInnerText(text.Text);
         }
@@ -110,7 +111,7 @@ namespace DurableCards
                 case AdaptiveTextSize.Small:
                     return "small";
                 default:
-                    return string.Empty;
+                    return null;
             }
         }
 
@@ -123,7 +124,7 @@ namespace DurableCards
                 case AdaptiveTextWeight.Lighter:
                     return "font-weight-light";
                 default:
-                    return string.Empty;
+                    return null;
             }
         }
 
@@ -253,5 +254,15 @@ public static class HtmlTagExtensions
         }
 
         return htmlTag;
+    }
+
+    public static HtmlTag AddOptionalClass(this HtmlTag htmlTag, string className)
+    {
+        if (string.IsNullOrEmpty(className))
+        {
+            return htmlTag;
+        }
+
+        return htmlTag.AddClass(className);
     }
 }
