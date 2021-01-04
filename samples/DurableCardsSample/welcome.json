@@ -1,0 +1,15 @@
+﻿{
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "DurableCards",
+      "size": "large"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Exploration of using Adaptive Cards with Durable Entities"
+    }
+  ]
+}

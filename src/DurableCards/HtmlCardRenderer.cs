@@ -45,13 +45,31 @@ namespace DurableCards
 
         protected static HtmlTag AdaptiveCardRender(AdaptiveCard card, AdaptiveRenderContext context)
         {
+            var html = new HtmlTag("html");
+            var head = new HtmlTag("head");
+            var body = new HtmlTag("body");
+            var form = new HtmlTag("form");
+
+            var stylesheet = new HtmlTag("link")
+                .Attr("rel", "stylesheet")
+                .Attr("href", "https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css");
+            
             var container = new DivTag()
                 .AddClass("container");
+
+            html.Append(head);
+            html.Append(body);
+
+            head.Append(stylesheet);
+
+            body.Append(form);
+
+            form.Append(container);
 
             AddContainerElements(container, card.Body, context);
             AddActions(container, card.Actions, context);
 
-            return container;
+            return html;
         }
 
         private static void AddActions(HtmlTag tag, List<AdaptiveAction> actions, AdaptiveRenderContext context)
