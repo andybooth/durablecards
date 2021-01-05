@@ -1,6 +1,6 @@
 # DurableCards
 
-Exploration of using Adaptive Cards (https://adaptivecards.io/) with Durable Entities (https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-entities?tabs=csharp) for stateful micro-UI.
+Exploration of using Adaptive Cards (https://adaptivecards.io/) with Durable Entities (https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-entities?tabs=csharp) for low-code stateful micro-UI. Possible use cases could be simple business scenarios such as Approvals, Questionnaires, Polls, Feedback Forms and Onboarding workflows. Deployment using Azure App Service "Easy Auth" could enable Azure AD authentication for internal applications. By using Adaptive Cards the same interactions can be reused in Bots (Microsoft Teams) and Actionable Messages (Office 365 email). Additionally rendering Adaptive Cards outside of Bots, as a more traditional web app, could open up other integrations such as human interactions within Azure Logic Apps workflows. 
 
 ## API
 
