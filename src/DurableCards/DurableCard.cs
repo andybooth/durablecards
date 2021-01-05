@@ -10,17 +10,8 @@ using System.Threading.Tasks;
 namespace DurableCards
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class DurableCard<TData> : IDurableCard
+    public class DurableCard<TData> : DurableCardState<TData>, IDurableCard
     {       
-        [JsonProperty("template")]
-        public object Template { get; set; }
-
-        [JsonProperty("schema")]
-        public object Schema { get; set; }
-
-        [JsonProperty("data")]
-        public TData Data { get; set; }
-
         public void Patch(JsonPatchDocument operations)
         {
             operations.ApplyTo(this);
@@ -37,7 +28,7 @@ namespace DurableCards
             return output.Html.ToString();
         }
 
-        public async Task<bool> IsValidAsync(JObject data)
+        public async Task<bool> ValidateAsync(JObject data)
         {
             if (Schema == null)
             {

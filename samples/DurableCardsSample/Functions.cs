@@ -15,7 +15,7 @@ namespace DurableCardsSample
     {
         [FunctionName(nameof(CreateCard))]
         public static async Task<string> CreateCard(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "card")] DurableCardRequest request,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "card")] DurableCardState<AttachmentData> request,
             [DurableClient] IDurableEntityClient client)
         {
             var entityId = NewEntityId();
@@ -65,7 +65,7 @@ namespace DurableCardsSample
 
             var attachment = request.ReadFormAsJObject();
 
-            if (!await entityState.EntityState.IsValidAsync(attachment))
+            if (!await entityState.EntityState.ValidateAsync(attachment))
             {
                 return new BadRequestResult();
             }
