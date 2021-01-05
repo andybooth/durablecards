@@ -8,6 +8,8 @@ Post an Adaptive Card Template to CreateCard. Optionally include an action using
 
 *CreateCard: [POST] http://{host}/api/card*
 
+Sample request
+
 ```
 {
     "definition": {
@@ -50,8 +52,6 @@ Post an Adaptive Card Template to CreateCard. Optionally include an action using
 }
 ```
 
-*PostCard: [POST] http://{host}/api/card/{id:guid}*
-
 *RenderCard: [GET] http://{host}/api/card/{id:guid}*
 
-*Welcome: [GET] http://{host}7071/api/welcome*
+*PostCard: [POST] http://{host}/api/card/{id:guid}*
