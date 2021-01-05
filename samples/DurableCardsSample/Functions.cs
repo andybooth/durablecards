@@ -4,29 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Newtonsoft.Json.Linq;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace DurableCardsSample
 {
     public static class Functions
     {
-        [FunctionName(nameof(Welcome))]
-        public static IActionResult Welcome(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "welcome")] HttpRequest request)
-        {
-            var json = File.ReadAllText("./welcome.json");
-            var card = new DurableCard();
-
-            card.Definition.Template = JObject.Parse(json);
-
-            var html = card.Render();
-
-            return new HtmlResult(html);
-        }
-
         [FunctionName(nameof(CreateCard))]
         public static async Task<string> CreateCard(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "card")] CreateCardRequest request,
@@ -86,7 +70,9 @@ namespace DurableCardsSample
 
             await client.SignalEntityAsync<IDurableCard>(entityId, c => c.AddAttachment(attachment));
 
-            return new JsonResult(attachment);
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            return new RedirectResult($"/card/{id}");
         }
     }
 

@@ -6,7 +6,7 @@ Exploration of using Adaptive Cards (https://adaptivecards.io/) with Durable Ent
 
 Post an Adaptive Card Template to CreateCard. Optionally include an action using Action.Submit and a JSON Schema to validate the postback. The text response is a guid for use with RenderCard, an HTML rendering of the card template using Bootstrap CSS. On postback, all input is saved to the `attachments` array for data binding in the template, allowing simple data driven interactions, with all state stored in a Durable Entity.
 
-*CreateCard: [POST] http://{host}/api/card*
+*CreateCard: [POST] http://{host}/card*
 
 Sample request
 
@@ -52,6 +52,6 @@ Sample request
 }
 ```
 
-*RenderCard: [GET] http://{host}/api/card/{id:guid}*
+*RenderCard: [GET] http://{host}/card/{id:guid}*
 
-*PostCard: [POST] http://{host}/api/card/{id:guid}*
+*PostCard: [POST] http://{host}/card/{id:guid}*
