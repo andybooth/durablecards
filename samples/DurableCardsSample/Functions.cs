@@ -1,10 +1,12 @@
 using DurableCards;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DurableCardsSample
@@ -13,17 +15,17 @@ namespace DurableCardsSample
     {
         [FunctionName(nameof(CreateCard))]
         public static async Task<string> CreateCard(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "card")] CreateCardRequest request,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "card")] DurableCardRequest request,
             [DurableClient] IDurableEntityClient client)
         {
-            var entityId = DurableCard.NewEntityId();
-            
-            await client.SignalEntityAsync<IDurableCard>(entityId, c => c.SetDefinition(request.Definition));
+            var entityId = NewEntityId();
+            var operations = new JsonPatchDocument();
 
-            if (request.Data != null)
-            {
-                await client.SignalEntityAsync<IDurableCard>(entityId, c => c.SetData(request.Data));
-            }
+            operations.Replace("template", request.Template);
+            operations.Replace("data", request.Data);
+            operations.Replace("schema", request.Schema);
+
+            await client.SignalEntityAsync<IDurableCard>(entityId, c => c.Patch(operations));
 
             return entityId.EntityKey;
         }
@@ -34,8 +36,8 @@ namespace DurableCardsSample
             Guid id,
             [DurableClient] IDurableEntityClient client)
         {
-            var entityId = DurableCard.EntityIdFromGuid(id);
-            var entityState = await client.ReadEntityStateAsync<DurableCard>(entityId);
+            var entityId = EntityIdFromGuid(id);
+            var entityState = await client.ReadEntityStateAsync<AttachmentDurableCard>(entityId);
 
             if (!entityState.EntityExists)
             {
@@ -53,8 +55,8 @@ namespace DurableCardsSample
             Guid id,
             [DurableClient] IDurableEntityClient client)
         {
-            var entityId = DurableCard.EntityIdFromGuid(id);
-            var entityState = await client.ReadEntityStateAsync<DurableCard>(entityId);
+            var entityId = EntityIdFromGuid(id);
+            var entityState = await client.ReadEntityStateAsync<AttachmentDurableCard>(entityId);
 
             if (!entityState.EntityExists)
             {
@@ -63,32 +65,35 @@ namespace DurableCardsSample
 
             var attachment = request.ReadFormAsJObject();
 
-            if (!await entityState.EntityState.Definition.IsValidAsync(attachment))
+            if (!await entityState.EntityState.IsValidAsync(attachment))
             {
                 return new BadRequestResult();
             }
 
-            await client.SignalEntityAsync<IDurableCard>(entityId, c => c.AddAttachment(attachment));
+            var operations = new JsonPatchDocument();
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            operations.Add("data/attachments/-", attachment);
+
+            await client.SignalEntityAsync<IDurableCard>(entityId, c => c.Patch(operations));
 
             return new RedirectResult($"/card/{id}");
         }
-    }
 
-    public class CreateCardRequest
-    {
-        public DurableDefinition Definition { get; set; }
-        public DurableData Data { get; set; }
-    }
-
-    public class DurableCard : DurableCardBase
-    {
-        [FunctionName(nameof(DurableCard))]
+        [FunctionName(nameof(AttachmentDurableCard))]
         public static Task Run([EntityTrigger] IDurableEntityContext context)
-            => context.DispatchAsync<DurableCard>();
+            => context.DispatchAsync<AttachmentDurableCard>();
 
-        public static EntityId NewEntityId() => new EntityId(nameof(DurableCard), Guid.NewGuid().ToString());
-        public static EntityId EntityIdFromGuid(Guid guid) => new EntityId(nameof(DurableCard), guid.ToString());
+        public static EntityId NewEntityId() => new EntityId(nameof(AttachmentDurableCard), Guid.NewGuid().ToString());
+        public static EntityId EntityIdFromGuid(Guid guid) => new EntityId(nameof(AttachmentDurableCard), guid.ToString());
+    }
+
+    public class AttachmentData
+    {
+        public List<object> Attachments { get; set; }
+    }
+
+    public class AttachmentDurableCard : DurableCard<AttachmentData>
+    {
+
     }
 }

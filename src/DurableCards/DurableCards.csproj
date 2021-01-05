@@ -8,6 +8,7 @@
     <PackageReference Include="AdaptiveCards.Rendering.Html" Version="2.4.0" />
     <PackageReference Include="AdaptiveCards.Templating" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="NJsonSchema" Version="10.3.2" />
   </ItemGroup>
