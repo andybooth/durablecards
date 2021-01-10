@@ -53,10 +53,11 @@ namespace DurableCardsSample
         public static async Task<IActionResult> PostCard(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "card/{id:guid}")] HttpRequest request,
             Guid id,
-            [DurableClient] IDurableEntityClient client)
+            [DurableClient] IDurableEntityClient entities,
+            [DurableClient] IDurableOrchestrationClient orchestrations)
         {
             var entityId = EntityIdFromGuid(id);
-            var entityState = await client.ReadEntityStateAsync<AttachmentDurableCard>(entityId);
+            var entityState = await entities.ReadEntityStateAsync<AttachmentDurableCard>(entityId);
 
             if (!entityState.EntityExists)
             {
@@ -74,9 +75,26 @@ namespace DurableCardsSample
 
             operations.Add("data/attachments/-", attachment);
 
-            await client.SignalEntityAsync<IDurableCard>(entityId, c => c.Patch(operations));
+            var entityOperation = new EntityOperation
+            {
+                EntityId = entityId,
+                Document = operations
+            };
+
+            var instanceId = await orchestrations.StartNewAsync(nameof(PatchCard), entityOperation);
+            var timeout = TimeSpan.FromMinutes(1);
+            var response = await orchestrations.WaitForCompletionOrCreateCheckStatusResponseAsync(request, instanceId, timeout);
 
             return new RedirectResult($"/card/{id}");
+        }
+
+        [FunctionName(nameof(PatchCard))]
+        public static async Task PatchCard(
+            [OrchestrationTrigger] IDurableOrchestrationContext context)
+        {
+            var entityOperation = context.GetInput<EntityOperation>();
+
+            await context.CallEntityAsync(entityOperation.EntityId, "Patch", entityOperation.Document);
         }
 
         [FunctionName(nameof(AttachmentDurableCard))]
@@ -95,5 +113,11 @@ namespace DurableCardsSample
     public class AttachmentDurableCard : DurableCard<AttachmentData>
     {
 
+    }
+
+    public class EntityOperation
+    {
+        public EntityId EntityId { get; set; }
+        public JsonPatchDocument Document { get; set; }
     }
 }
